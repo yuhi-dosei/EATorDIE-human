@@ -41,6 +41,18 @@
             </table>
         </div>
         <script language="javascript" type="text/javascript">
+           
+            $(document).ready(function () {
+                $.getJSON($("meta[name=bmstable]").attr("content"), function (header) {
+                    $.getJSON(header.data_url, function (information) {
+                        makeBMSTable(information, header.symbol);
+                    });
+                });
+            });
+
+            // ソートのための引数追加
+function makeBMSTable(info, mark, order) {
+	
             $(document).ready(function () {
                 $.getJSON($("meta[name=bmstable]").attr("content"), function (header) {
                     $.getJSON(header.data_url, function (information) {
@@ -56,13 +68,13 @@
                 var obj = $("#table_int");
 
                 obj.html("");
-                $("<thead class='table-dark'><tr><th>Level</th><th>Title</th><th>Artist</th><th>Comment</th></tr></thead><tbody>")
+                $("<thead class='table-dark'><tr><th>Level</th><th>曲名</th><th>mochaIR</th><th>アーティスト</th>><th>差分</th><th>コメント</th></tr></thead><tbody>")
                     .appendTo(obj);
                 var obj_sep = null;
                 for (var i = 0; i < info.length; i++) {
                     if (x != info[i].level) {
                         if (obj_sep != null) {
-                            obj_sep.html("<td colspan='4'>" + "<b>" + mark + x + " (" + count +
+                            obj_sep.html("<td colspan='6'>" + "<b>" + mark + x + " (" + count +
                                 "譜面)</b></td>");
                         }
                         obj_sep = $("<tr class='table-dark' style='text-align:center' id='" + mark + info[i].level +
@@ -75,19 +87,67 @@
                     var str = $("<tr></tr>");
 
                     // Level
-                    $("<td width='5%'>" + mark + x + "</td>").appendTo(str);
+                    $("<td width='14%'>" + mark + x + "</td>").appendTo(str);
 
                     // Title
-                    $("<td width='45%'>" +
-                        "<a href='http://www.dream-pro.info/~lavalse/LR2IR/search.cgi?mode=ranking&bmsmd5=" + info[
-                            i]
-                        .md5 + "' target='_blank'>" + info[i].title + "</a></td>").appendTo(str);
-
-                    // Artist
-                    $("<td width='40%'>" + info[i].artist + "</td>").appendTo(str);
+                    if (info[i].md5 != "" && info[i].md5 != null) {
+                        $("<td width='25%'>" +
+                            "<a href='http://www.dream-pro.info/~lavalse/LR2IR/search.cgi?mode=ranking&bmsmd5=" + info[i]
+                            .md5 + "' target='_blank'>" + info[i].title + "</a></td>").appendTo(str);
+                    }
+                    else{
+                        $("<td width='25%'>" +
+                            "<a href='https://mocha-repository.info/song.php?sha256=" + info[i]
+                            .sha256 + "' target='_blank'>" + info[i].title + "</a></td>").appendTo(str);
+                    }
+                    
+                    // mochaIR
+                    $("<td width='7%'>" +
+                        "<a href='https://mocha-repository.info/song.php?sha256=" + info[i]
+                        .sha256 + "' target='_blank'>" + 'mocha' + "</a></td>").appendTo(str);
+                    
+                    // アーティスト
+                    var astr = "";
+                    if (info[i].url != "" && info[i].url != null) {
+                        if (info[i].artist != "" && info[i].artist != null) {
+                            astr = "<a href='" + info[i].url + "'>" + info[i].artist + "</a>";
+                        } else {
+                            astr = "<a href='" + info[i].url + "'>" + info[i].url + "</a>";
+                        }
+                    } else {
+                        if (info[i].artist != "" && info[i].artist != null) {
+                            astr = info[i].artist;
+                        }
+                    }
+                    if (info[i].url_pack != "" && info[i].url_pack != null) {
+                        if (info[i].name_pack != "" && info[i].name_pack != null) {
+                            astr += "<br />(<a href='" + info[i].url_pack + "'>" + info[i].name_pack + "</a>)";
+                        } else {
+                            astr += "<br />(<a href='" + info[i].url_pack + "'>" + info[i].url_pack + "</a>)";
+                        }
+                    } else {
+                        if (info[i].name_pack != "" && info[i].name_pack != null) {
+                            astr += "<br />(" + info[i].name_pack + ")";
+                        }
+                    }
+                    $("<td width='15%'>" + astr + "</td>").appendTo(str);
+                    // 差分
+                    if (info[i].url_diff != "" && info[i].url_diff != null) {
+                        if (info[i].name_diff != "" && info[i].name_diff != null) {
+                            $("<td width='15%'><a href='" + info[i].url_diff + "'>" + info[i].name_diff + "</a></td>").appendTo(str);
+                        } else {
+                            $("<td width='15%'><a href='" + info[i].url_diff + "'>" + info[i].url_diff + "</a></td>").appendTo(str);
+                        }
+                    } else {
+                        if (info[i].name_diff != "" && info[i].name_diff != null) {
+                            $("<td width='15%'>" + info[i].name_diff + "</td>").appendTo(str);
+                        } else {
+                            $("<td width='15%'></td>").appendTo(str);
+                        }
+                    }
 
                     // Comment
-                    $("<td width='10%'>" + info[i].comment + "</td>").appendTo(str);
+                    $("<td width='23%'>" + info[i].comment + "</td>").appendTo(str);
                     str.appendTo(obj);
                     count++;
 
@@ -95,10 +155,12 @@
                 $("</tbody>").appendTo(obj);
 
                 if (obj_sep != null) {
-                    obj_sep.html("<td class='table-dark' style='text-align:center' colspan='4'>" + "<b>" + mark + x +
+                    obj_sep.html("<td class='table-dark' style='text-align:center' colspan='6'>" + "<b>" + mark + x +
                         " (" + count + "譜面)</b></td>");
                 }
             }
+    }
+        
         </script>
     </div>
 
